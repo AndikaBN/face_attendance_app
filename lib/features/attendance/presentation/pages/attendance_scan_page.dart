@@ -581,7 +581,7 @@ class _ResultBottomSheet extends StatelessWidget {
             if (recognized) ...[
               _buildInfoRow(Icons.person, 'Nama', result.studentName ?? '-'),
               const SizedBox(height: 12),
-              _buildInfoRow(Icons.badge, 'NIM', result.nim ?? '-'),
+              _buildInfoRow(Icons.badge, 'NPM', result.nim ?? '-'),
               const SizedBox(height: 12),
               _buildInfoRow(
                 Icons.analytics,
