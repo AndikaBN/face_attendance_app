@@ -7,9 +7,9 @@ import 'package:face_attendance_app/features/auth/presentation/cubit/auth_cubit.
 import 'package:face_attendance_app/features/attendance/data/models/attendance_log_model.dart';
 import 'package:face_attendance_app/features/lecturer/presentation/cubit/lecturer_cubit.dart';
 import 'package:face_attendance_app/features/lecturer/presentation/cubit/lecturer_state.dart';
+import 'package:face_attendance_app/features/lecturer/utils/pdf_report_generator.dart';
 
-/// Dashboard utama untuk dosen.
-/// Menampilkan daftar absensi mahasiswa dengan filter tanggal.
+/// Dashboard utama untuk dosen (Light Theme + Fitur Status Masuk/Izin/Alpa + Export PDF).
 class LecturerDashboardPage extends StatelessWidget {
   final UserModel user;
 
@@ -29,6 +29,25 @@ class _LecturerDashboardView extends StatelessWidget {
 
   const _LecturerDashboardView({required this.user});
 
+  void _exportPdf(BuildContext context) {
+    final state = context.read<LecturerCubit>().state;
+    if (state is LecturerLoaded) {
+      PdfReportGenerator.printOrSavePdf(
+        lecturer: user,
+        date: state.selectedDate,
+        logs: state.logs,
+        totalStudents: state.totalStudents,
+        presentCount: state.presentCount,
+        izinCount: state.izinCount,
+        alpaCount: state.alpaCount,
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Tunggu hingga data absensi selesai dimuat')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -43,7 +62,7 @@ class _LecturerDashboardView extends StatelessWidget {
             // Date selector
             _buildDateSelector(context),
 
-            // Stats card
+            // Stats cards (Hadir, Izin, Alpa, Persentase)
             _buildStatsCard(),
 
             // Divider
@@ -61,8 +80,12 @@ class _LecturerDashboardView extends StatelessWidget {
   }
 
   Widget _buildHeader(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
+    return Container(
+      padding: const EdgeInsets.fromLTRB(24, 16, 20, 12),
+      decoration: const BoxDecoration(
+        color: AppColors.surface,
+        border: Border(bottom: BorderSide(color: AppColors.border)),
+      ),
       child: Row(
         children: [
           Container(
@@ -70,14 +93,14 @@ class _LecturerDashboardView extends StatelessWidget {
             height: 48,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: const Color(0x20BB86FC),
-              border: Border.all(color: const Color(0x40BB86FC), width: 2),
+              color: AppColors.primaryFaded,
+              border: Border.all(color: AppColors.primaryBorder, width: 2),
             ),
             child: Center(
               child: Text(
                 user.name.isNotEmpty ? user.name[0].toUpperCase() : 'D',
                 style: const TextStyle(
-                  color: Color(0xFFBB86FC),
+                  color: AppColors.primary,
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
@@ -92,7 +115,7 @@ class _LecturerDashboardView extends StatelessWidget {
                 Text(
                   'Halo, ${user.name}!',
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
@@ -100,14 +123,23 @@ class _LecturerDashboardView extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 const Text(
-                  'Panel Dosen',
+                  'Panel Monitoring Dosen',
                   style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
                 ),
               ],
             ),
           ),
+
+          // Export PDF button
           IconButton(
-            icon: const Icon(Icons.logout, color: AppColors.error, size: 22),
+            icon: const Icon(Icons.picture_as_pdf_rounded, color: AppColors.primary, size: 24),
+            onPressed: () => _exportPdf(context),
+            tooltip: 'Cetak Laporan PDF',
+          ),
+
+          // Logout button
+          IconButton(
+            icon: const Icon(Icons.logout_rounded, color: AppColors.error, size: 22),
             onPressed: () => context.read<AuthCubit>().logout(),
             tooltip: 'Logout',
           ),
@@ -126,43 +158,46 @@ class _LecturerDashboardView extends StatelessWidget {
             DateFormat('yyyy-MM-dd').format(DateTime.now());
 
         return Padding(
-          padding: const EdgeInsets.fromLTRB(24, 12, 24, 8),
+          padding: const EdgeInsets.fromLTRB(24, 14, 24, 10),
           child: Row(
             children: [
               // Prev day
               _buildDateNavButton(
-                icon: Icons.chevron_left,
+                icon: Icons.chevron_left_rounded,
                 onTap: () {
                   final prev = selectedDate.subtract(const Duration(days: 1));
                   context.read<LecturerCubit>().loadAttendanceByDate(prev);
                 },
               ),
+              const SizedBox(width: 8),
 
               // Date display
               Expanded(
                 child: GestureDetector(
                   onTap: () => _showDatePicker(context, selectedDate),
                   child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     decoration: BoxDecoration(
                       color: AppColors.surface,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: AppColors.border),
+                      boxShadow: const [
+                        BoxShadow(color: AppColors.shadow, blurRadius: 6),
+                      ],
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.calendar_today,
+                        const Icon(Icons.calendar_today_rounded,
                             color: AppColors.primary, size: 18),
                         const SizedBox(width: 10),
                         Flexible(
                           child: Text(
                             isToday ? 'Hari Ini' : dateFormatted,
                             style: const TextStyle(
-                              color: Colors.white,
+                              color: AppColors.textPrimary,
                               fontSize: 14,
-                              fontWeight: FontWeight.w500,
+                              fontWeight: FontWeight.bold,
                             ),
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -172,10 +207,11 @@ class _LecturerDashboardView extends StatelessWidget {
                   ),
                 ),
               ),
+              const SizedBox(width: 8),
 
               // Next day
               _buildDateNavButton(
-                icon: Icons.chevron_right,
+                icon: Icons.chevron_right_rounded,
                 onTap: () {
                   final next = selectedDate.add(const Duration(days: 1));
                   if (next.isBefore(
@@ -184,33 +220,6 @@ class _LecturerDashboardView extends StatelessWidget {
                   }
                 },
               ),
-
-              const SizedBox(width: 8),
-
-              // Today button
-              if (!isToday)
-                GestureDetector(
-                  onTap: () {
-                    context.read<LecturerCubit>().loadTodayAttendance();
-                  },
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryFaded,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: AppColors.primaryBorder),
-                    ),
-                    child: const Text(
-                      'Hari Ini',
-                      style: TextStyle(
-                        color: AppColors.primary,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
             ],
           ),
         );
@@ -225,14 +234,17 @@ class _LecturerDashboardView extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 40,
-        height: 40,
+        width: 42,
+        height: 42,
         decoration: BoxDecoration(
-          color: AppColors.surfaceLight,
-          borderRadius: BorderRadius.circular(10),
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(color: AppColors.border),
+          boxShadow: const [
+            BoxShadow(color: AppColors.shadow, blurRadius: 4),
+          ],
         ),
-        child: Icon(icon, color: AppColors.textSecondary, size: 22),
+        child: Icon(icon, color: AppColors.textPrimary, size: 24),
       ),
     );
   }
@@ -247,14 +259,11 @@ class _LecturerDashboardView extends StatelessWidget {
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.dark(
+            colorScheme: const ColorScheme.light(
               primary: AppColors.primary,
-              onPrimary: AppColors.background,
+              onPrimary: Colors.white,
               surface: AppColors.surface,
-              onSurface: Colors.white,
-            ),
-            dialogTheme: const DialogThemeData(
-              backgroundColor: AppColors.background,
+              onSurface: AppColors.textPrimary,
             ),
           ),
           child: child!,
@@ -273,27 +282,68 @@ class _LecturerDashboardView extends StatelessWidget {
         if (state is! LecturerLoaded) return const SizedBox();
 
         return Padding(
-          padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
-          child: Row(
+          padding: const EdgeInsets.fromLTRB(24, 6, 24, 14),
+          child: Column(
             children: [
-              _buildStatItem(
-                label: 'Hadir',
-                value: '${state.presentCount}',
-                color: AppColors.success,
+              Row(
+                children: [
+                  _buildStatItem(
+                    label: 'Hadir (Masuk)',
+                    value: '${state.presentCount}',
+                    color: AppColors.success,
+                    bgColor: AppColors.successFaded,
+                    borderColor: AppColors.successBorder,
+                  ),
+                  const SizedBox(width: 8),
+                  _buildStatItem(
+                    label: 'Izin',
+                    value: '${state.izinCount}',
+                    color: AppColors.warning,
+                    bgColor: AppColors.warningFaded,
+                    borderColor: AppColors.warningBorder,
+                  ),
+                  const SizedBox(width: 8),
+                  _buildStatItem(
+                    label: 'Alpa',
+                    value: '${state.alpaCount}',
+                    color: AppColors.error,
+                    bgColor: AppColors.errorFaded,
+                    borderColor: AppColors.errorBorder,
+                  ),
+                ],
               ),
-              const SizedBox(width: 12),
-              _buildStatItem(
-                label: 'Total Mahasiswa',
-                value: '${state.totalStudents}',
-                color: AppColors.primary,
-              ),
-              const SizedBox(width: 12),
-              _buildStatItem(
-                label: 'Persentase',
-                value: '${state.attendancePercentage.toStringAsFixed(0)}%',
-                color: state.attendancePercentage >= 75
-                    ? AppColors.success
-                    : AppColors.warning,
+              const SizedBox(height: 8),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Total Mahasiswa: ${state.totalStudents}',
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    Text(
+                      'Kehadiran: ${state.attendancePercentage.toStringAsFixed(0)}%',
+                      style: TextStyle(
+                        color: state.attendancePercentage >= 75
+                            ? AppColors.success
+                            : AppColors.warning,
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -306,14 +356,16 @@ class _LecturerDashboardView extends StatelessWidget {
     required String label,
     required String value,
     required Color color,
+    required Color bgColor,
+    required Color borderColor,
   }) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
         decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withValues(alpha: 0.25)),
+          color: bgColor,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: borderColor),
         ),
         child: Column(
           children: [
@@ -325,10 +377,10 @@ class _LecturerDashboardView extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 2),
             Text(
               label,
-              style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+              style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w600),
               textAlign: TextAlign.center,
             ),
           ],
@@ -351,12 +403,11 @@ class _LecturerDashboardView extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.error_outline,
-                    color: AppColors.error, size: 48),
+                const Icon(Icons.error_outline, color: AppColors.error, size: 48),
                 const SizedBox(height: 12),
                 Text(
                   state.message,
-                  style: const TextStyle(color: AppColors.textMuted),
+                  style: const TextStyle(color: AppColors.textSecondary),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 16),
@@ -376,13 +427,13 @@ class _LecturerDashboardView extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.people_outline,
+                Icon(Icons.people_outline_rounded,
                     size: 56, color: AppColors.textMuted),
                 SizedBox(height: 12),
                 Text(
-                  'Belum ada absensi\npada tanggal ini',
+                  'Belum ada absensi atau izin\npada tanggal ini',
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: AppColors.textMuted, fontSize: 15),
+                  style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
                 ),
               ],
             ),
@@ -410,36 +461,44 @@ class _LecturerDashboardView extends StatelessWidget {
   }
 
   Widget _buildStudentLogCard(AttendanceLogModel log, int index) {
+    Color badgeColor = AppColors.success;
+    Color badgeBg = AppColors.successFaded;
+    IconData badgeIcon = Icons.check_circle_rounded;
+
+    if (log.isIzin) {
+      badgeColor = AppColors.warning;
+      badgeBg = AppColors.warningFaded;
+      badgeIcon = Icons.edit_note_rounded;
+    } else if (log.isAlpa) {
+      badgeColor = AppColors.error;
+      badgeBg = AppColors.errorFaded;
+      badgeIcon = Icons.cancel_rounded;
+    }
+
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(color: AppColors.border),
+        boxShadow: const [
+          BoxShadow(color: AppColors.shadow, blurRadius: 6, offset: Offset(0, 2)),
+        ],
       ),
       child: Row(
         children: [
-          // Nomor urut
+          // Status Badge / Icon
           Container(
-            width: 36,
-            height: 36,
+            width: 42,
+            height: 42,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              color: AppColors.primaryFaded,
+              borderRadius: BorderRadius.circular(12),
+              color: badgeBg,
             ),
-            child: Center(
-              child: Text(
-                '$index',
-                style: const TextStyle(
-                  color: AppColors.primary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
+            child: Icon(badgeIcon, color: badgeColor, size: 22),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 14),
 
           // Nama & NIM
           Expanded(
@@ -449,38 +508,55 @@ class _LecturerDashboardView extends StatelessWidget {
                 Text(
                   log.studentName,
                   style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 2),
                 Text(
                   'NIM: ${log.nim}',
-                  style:
-                      const TextStyle(color: AppColors.textMuted, fontSize: 12),
+                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
                 ),
+                if (log.isIzin && log.alasanIzin != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    'Alasan: ${log.alasanIzin}',
+                    style: const TextStyle(color: AppColors.warning, fontSize: 11, fontWeight: FontWeight.w500),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
               ],
             ),
           ),
 
-          // Waktu
+          // Waktu & Status
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: badgeBg,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  log.statusLabel,
+                  style: TextStyle(
+                    color: badgeColor,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 4),
               Text(
                 log.timeFormatted,
                 style: const TextStyle(
-                  color: AppColors.primary,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
+                  color: AppColors.textSecondary,
+                  fontSize: 12,
                 ),
-              ),
-              Text(
-                '${log.similarityPercent} sim',
-                style:
-                    const TextStyle(color: AppColors.textMuted, fontSize: 11),
               ),
             ],
           ),

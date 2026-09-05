@@ -9,8 +9,8 @@ import 'package:face_attendance_app/features/attendance/data/models/attendance_l
 
 /// Repository untuk operasi absensi:
 /// - Upload gambar wajah untuk prediksi (Flask API)
-/// - Simpan log absensi ke Firestore
-/// - Query riwayat absensi
+/// - Simpan log absensi (Masuk / Izin) ke Firestore
+/// - Query riwayat absensi & status hari ini
 class AttendanceRepository {
   final ApiClient _apiClient;
 
@@ -30,7 +30,7 @@ class AttendanceRepository {
     }
   }
 
-  /// Simpan log absensi ke Firestore.
+  /// Simpan log absensi MASUK ke Firestore.
   Future<void> saveAttendanceLog({
     required String userUid,
     required PredictResponseModel result,
@@ -49,38 +49,79 @@ class AttendanceRepository {
       'timestamp': Timestamp.fromDate(now),
       'date_key': dateKey,
       'image_url': null,
+      'status': 'masuk',
+      'alasan_izin': null,
     });
 
-    debugPrint('[AttendanceRepository] ✅ Log absensi disimpan ke Firestore');
+    debugPrint('[AttendanceRepository] ✅ Log absensi masuk disimpan ke Firestore');
   }
 
-  /// Cek apakah mahasiswa sudah absen hari ini.
-  Future<bool> hasAttendedToday(String userUid) async {
+  /// Simpan log IZIN ke Firestore.
+  Future<void> saveIzinLog({
+    required String userUid,
+    required String studentName,
+    required String nim,
+    required String alasanIzin,
+  }) async {
+    final now = DateTime.now();
+    final dateKey = DateFormat('yyyy-MM-dd').format(now);
+
+    await _logsCollection.add({
+      'user_uid': userUid,
+      'student_name': studentName,
+      'nim': nim,
+      'confidence': 1.0,
+      'similarity': 1.0,
+      'recognized': true,
+      'message': 'Izin diajukan',
+      'timestamp': Timestamp.fromDate(now),
+      'date_key': dateKey,
+      'image_url': null,
+      'status': 'izin',
+      'alasan_izin': alasanIzin,
+    });
+
+    debugPrint('[AttendanceRepository] ✅ Log izin disimpan ke Firestore');
+  }
+
+  /// Cek log absensi hari ini untuk mahasiswa.
+  Future<AttendanceLogModel?> getTodayStatus(String userUid) async {
     final dateKey = DateFormat('yyyy-MM-dd').format(DateTime.now());
 
     final query = await _logsCollection
         .where('user_uid', isEqualTo: userUid)
         .where('date_key', isEqualTo: dateKey)
-        .where('recognized', isEqualTo: true)
         .limit(1)
         .get();
 
-    return query.docs.isNotEmpty;
+    if (query.docs.isEmpty) return null;
+    return AttendanceLogModel.fromFirestore(query.docs.first);
+  }
+
+  /// Cek apakah mahasiswa sudah absen hari ini (Masuk / Izin).
+  Future<bool> hasAttendedToday(String userUid) async {
+    final status = await getTodayStatus(userUid);
+    return status != null;
   }
 
   /// Ambil riwayat absensi mahasiswa sendiri (terbaru dulu).
+  /// Menggunakan sorting memori (Dart) untuk menghindari syarat Composite Index Firestore.
   Future<List<AttendanceLogModel>> getMyAttendanceHistory(
     String userUid, {
     int limit = 30,
   }) async {
     final query = await _logsCollection
         .where('user_uid', isEqualTo: userUid)
-        .where('recognized', isEqualTo: true)
-        .orderBy('timestamp', descending: true)
-        .limit(limit)
         .get();
 
-    return query.docs.map((doc) => AttendanceLogModel.fromFirestore(doc)).toList();
+    final logs = query.docs
+        .map((doc) => AttendanceLogModel.fromFirestore(doc))
+        .toList();
+
+    // Urutkan terbaru dulu di memori Dart
+    logs.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+
+    return logs.take(limit).toList();
   }
 
   /// Ambil semua absensi pada tanggal tertentu (untuk dosen).
@@ -89,10 +130,15 @@ class AttendanceRepository {
 
     final query = await _logsCollection
         .where('date_key', isEqualTo: dateKey)
-        .where('recognized', isEqualTo: true)
-        .orderBy('timestamp', descending: false)
         .get();
 
-    return query.docs.map((doc) => AttendanceLogModel.fromFirestore(doc)).toList();
+    final logs = query.docs
+        .map((doc) => AttendanceLogModel.fromFirestore(doc))
+        .toList();
+
+    // Urutkan terlama dulu di memori Dart
+    logs.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+
+    return logs;
   }
 }

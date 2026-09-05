@@ -1,40 +1,52 @@
 import 'package:flutter/material.dart';
 
-/// Warna-warna konsisten untuk seluruh aplikasi.
+/// Warna-warna konsisten untuk seluruh aplikasi (Light Theme).
 class AppColors {
   AppColors._();
 
   // Background
-  static const Color background = Color(0xFF0A0E21);
-  static const Color surface = Color(0xFF141829);
-  static const Color surfaceLight = Color(0xFF1A1F38);
-  static const Color cardDark = Color(0xFF1E2340);
+  static const Color background = Color(0xFFF5F7FA);
+  static const Color surface = Color(0xFFFFFFFF);
+  static const Color surfaceLight = Color(0xFFF0F2F5);
+  static const Color cardDark = Color(0xFFE8EDF2);
 
-  // Primary Accent (Teal)
-  static const Color primary = Color(0xFF64FFDA);
-  static const Color primaryDark = Color(0xFF00BFA5);
-  static const Color primaryFaded = Color(0x2064FFDA);
-  static const Color primaryBorder = Color(0x4064FFDA);
+  // Primary Accent (Blue)
+  static const Color primary = Color(0xFF1565C0);
+  static const Color primaryDark = Color(0xFF0D47A1);
+  static const Color primaryLight = Color(0xFF42A5F5);
+  static const Color primaryFaded = Color(0x201565C0);
+  static const Color primaryBorder = Color(0x401565C0);
 
-  // Error / Danger (Coral)
-  static const Color error = Color(0xFFFF6B6B);
-  static const Color errorFaded = Color(0x20FF6B6B);
-  static const Color errorBorder = Color(0x40FF6B6B);
+  // Error / Danger / Alpa (Red)
+  static const Color error = Color(0xFFEF4444);
+  static const Color errorFaded = Color(0x15EF4444);
+  static const Color errorBorder = Color(0x30EF4444);
 
-  // Success (Green)
-  static const Color success = Color(0xFF66BB6A);
-  static const Color successFaded = Color(0x2066BB6A);
+  // Success / Masuk (Green)
+  static const Color success = Color(0xFF22C55E);
+  static const Color successFaded = Color(0x1522C55E);
+  static const Color successBorder = Color(0x3022C55E);
 
-  // Warning (Amber)
-  static const Color warning = Color(0xFFFFB74D);
-  static const Color warningFaded = Color(0x20FFB74D);
+  // Warning / Izin (Amber)
+  static const Color warning = Color(0xFFF59E0B);
+  static const Color warningFaded = Color(0x15F59E0B);
+  static const Color warningBorder = Color(0x30F59E0B);
+
+  // Info (Blue light)
+  static const Color info = Color(0xFF3B82F6);
+  static const Color infoFaded = Color(0x153B82F6);
 
   // Text
-  static const Color textPrimary = Colors.white;
-  static const Color textSecondary = Colors.white70;
-  static const Color textMuted = Colors.white38;
-  static const Color textDisabled = Colors.white24;
+  static const Color textPrimary = Color(0xFF1A1A2E);
+  static const Color textSecondary = Color(0xFF6B7280);
+  static const Color textMuted = Color(0xFF9CA3AF);
+  static const Color textDisabled = Color(0xFFD1D5DB);
 
   // Border
-  static const Color border = Color(0xFF2A2F48);
+  static const Color border = Color(0xFFE5E7EB);
+  static const Color borderLight = Color(0xFFF3F4F6);
+
+  // Shadow
+  static const Color shadow = Color(0x0A000000);
+  static const Color shadowMedium = Color(0x14000000);
 }

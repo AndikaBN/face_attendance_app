@@ -18,12 +18,13 @@ void main() async {
     DeviceOrientation.portraitUp,
   ]);
 
-  // Status bar transparan
+  // Status bar untuk light theme
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
-    statusBarIconBrightness: Brightness.light,
+    statusBarIconBrightness: Brightness.dark,
+    statusBarBrightness: Brightness.light,
     systemNavigationBarColor: AppColors.background,
-    systemNavigationBarIconBrightness: Brightness.light,
+    systemNavigationBarIconBrightness: Brightness.dark,
   ));
 
   // Initialize Firebase
@@ -46,29 +47,50 @@ class FaceAttendanceApp extends StatelessWidget {
         title: 'Face Attendance',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
-          brightness: Brightness.dark,
+          brightness: Brightness.light,
           scaffoldBackgroundColor: AppColors.background,
-          colorScheme: const ColorScheme.dark(
+          colorScheme: const ColorScheme.light(
             primary: AppColors.primary,
-            secondary: AppColors.primary,
+            secondary: AppColors.primaryLight,
             surface: AppColors.surface,
-            onPrimary: AppColors.background,
-            onSurface: Colors.white,
+            error: AppColors.error,
+            onPrimary: Colors.white,
+            onSurface: AppColors.textPrimary,
           ),
           fontFamily: 'Roboto',
           appBarTheme: const AppBarTheme(
-            backgroundColor: AppColors.background,
+            backgroundColor: AppColors.surface,
             elevation: 0,
             centerTitle: true,
+            iconTheme: IconThemeData(color: AppColors.textPrimary),
+            titleTextStyle: TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+            ),
           ),
           elevatedButtonTheme: ElevatedButtonThemeData(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
-              foregroundColor: AppColors.background,
+              foregroundColor: Colors.white,
+              elevation: 2,
+              shadowColor: AppColors.primaryFaded,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
+          ),
+          cardTheme: CardThemeData(
+            color: AppColors.surface,
+            elevation: 2,
+            shadowColor: AppColors.shadow,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+          ),
+          dividerTheme: const DividerThemeData(
+            color: AppColors.border,
+            thickness: 1,
           ),
         ),
         home: const _AuthGate(),

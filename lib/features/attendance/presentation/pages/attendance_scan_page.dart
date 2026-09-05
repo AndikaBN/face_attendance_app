@@ -3,14 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:face_attendance_app/core/constants/app_colors.dart';
 import 'package:face_attendance_app/features/attendance/presentation/cubit/attendance_cubit.dart';
 import 'package:face_attendance_app/features/attendance/presentation/cubit/attendance_state.dart';
 import 'package:face_attendance_app/features/attendance/presentation/widgets/face_box_painter.dart';
 import 'package:face_attendance_app/features/attendance/data/models/predict_response_model.dart';
-
 import 'package:face_attendance_app/features/auth/data/models/user_model.dart';
 
-/// Halaman utama scan absensi dengan kamera dan deteksi wajah.
+/// Halaman utama scan absensi dengan kamera dan deteksi wajah (Light Theme).
 class AttendanceScanPage extends StatefulWidget {
   final UserModel user;
 
@@ -45,18 +45,14 @@ class _AttendanceScanPageState extends State<AttendanceScanPage>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     final controller = _cubit.cameraController;
 
-    // Jangan proses jika kamera belum ready
     if (controller == null || !controller.value.isInitialized) {
       return;
     }
 
     if (state == AppLifecycleState.inactive ||
         state == AppLifecycleState.paused) {
-      // Hanya stop stream, JANGAN dispose controller
-      // Dispose menyebabkan crash di widget tree
       _cubit.stopStream();
     } else if (state == AppLifecycleState.resumed) {
-      // Restart stream saat app kembali aktif
       _cubit.resumeStream();
     }
   }
@@ -91,7 +87,7 @@ class _AttendanceScanPageState extends State<AttendanceScanPage>
     return BlocProvider.value(
       value: _cubit,
       child: Scaffold(
-        backgroundColor: const Color(0xFF0A0E21),
+        backgroundColor: AppColors.background,
         body: _permissionChecked
             ? (_permissionGranted ? _buildCameraView() : _buildPermissionDenied())
             : _buildLoading(),
@@ -104,11 +100,11 @@ class _AttendanceScanPageState extends State<AttendanceScanPage>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(color: Color(0xFF64FFDA)),
+          CircularProgressIndicator(color: AppColors.primary),
           SizedBox(height: 16),
           Text(
             'Memuat kamera...',
-            style: TextStyle(color: Colors.white70, fontSize: 16),
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 16),
           ),
         ],
       ),
@@ -122,12 +118,12 @@ class _AttendanceScanPageState extends State<AttendanceScanPage>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.camera_alt_outlined, size: 72, color: Colors.white38),
+            const Icon(Icons.camera_alt_outlined, size: 72, color: AppColors.textMuted),
             const SizedBox(height: 24),
             const Text(
               'Izin Kamera Diperlukan',
               style: TextStyle(
-                color: Colors.white,
+                color: AppColors.textPrimary,
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
               ),
@@ -136,7 +132,7 @@ class _AttendanceScanPageState extends State<AttendanceScanPage>
             const Text(
               'Aplikasi memerlukan akses kamera untuk mendeteksi wajah dan melakukan absensi.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white54, fontSize: 15),
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 15),
             ),
             const SizedBox(height: 32),
             ElevatedButton.icon(
@@ -144,8 +140,8 @@ class _AttendanceScanPageState extends State<AttendanceScanPage>
               icon: const Icon(Icons.settings),
               label: const Text('Buka Pengaturan'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF64FFDA),
-                foregroundColor: const Color(0xFF0A0E21),
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -168,10 +164,9 @@ class _AttendanceScanPageState extends State<AttendanceScanPage>
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.message),
-              backgroundColor: Colors.redAccent,
+              backgroundColor: AppColors.error,
             ),
           );
-          // Reset ke kamera setelah error
           _cubit.resetToCamera();
         }
       },
@@ -203,7 +198,7 @@ class _AttendanceScanPageState extends State<AttendanceScanPage>
     final controller = _cubit.cameraController;
     if (controller == null || !controller.value.isInitialized) {
       return const Center(
-        child: CircularProgressIndicator(color: Color(0xFF64FFDA)),
+        child: CircularProgressIndicator(color: AppColors.primary),
       );
     }
 
@@ -225,7 +220,6 @@ class _AttendanceScanPageState extends State<AttendanceScanPage>
     final controller = _cubit.cameraController;
     if (controller == null) return const SizedBox();
 
-    // Tentukan rotasi berdasarkan sensor orientation
     final rotation = _sensorOrientationToRotation(
       controller.description.sensorOrientation,
     );
@@ -263,7 +257,7 @@ class _AttendanceScanPageState extends State<AttendanceScanPage>
       child: Container(
         padding: EdgeInsets.only(
           top: MediaQuery.of(context).padding.top + 8,
-          left: 20,
+          left: 16,
           right: 20,
           bottom: 16,
         ),
@@ -272,22 +266,26 @@ class _AttendanceScanPageState extends State<AttendanceScanPage>
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xCC0A0E21),
+              Color(0xAA000000),
               Colors.transparent,
             ],
           ),
         ),
-        child: const Row(
+        child: Row(
           children: [
-            Icon(Icons.face_retouching_natural, color: Color(0xFF64FFDA), size: 28),
-            SizedBox(width: 12),
-            Text(
-              'Absensi Wajah',
+            IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
+              onPressed: () => Navigator.pop(context),
+            ),
+            const SizedBox(width: 4),
+            const Icon(Icons.face_retouching_natural, color: AppColors.success, size: 26),
+            const SizedBox(width: 10),
+            const Text(
+              'Scan Wajah Absensi',
               style: TextStyle(
                 color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 0.5,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ],
@@ -316,8 +314,8 @@ class _AttendanceScanPageState extends State<AttendanceScanPage>
             begin: Alignment.bottomCenter,
             end: Alignment.topCenter,
             colors: [
-              Color(0xEE0A0E21),
-              Color(0xAA0A0E21),
+              Color(0xDD000000),
+              Color(0x88000000),
               Colors.transparent,
             ],
             stops: [0.0, 0.7, 1.0],
@@ -326,33 +324,23 @@ class _AttendanceScanPageState extends State<AttendanceScanPage>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Status indicator
             _buildStatusIndicator(faceDetected),
-
             const SizedBox(height: 20),
 
-            // Tombol Absen
             SizedBox(
               width: double.infinity,
-              height: 56,
+              height: 54,
               child: ElevatedButton(
                 onPressed: canTap ? () => _cubit.captureAndPredict() : null,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                      canTap ? const Color(0xFF64FFDA) : const Color(0xFF1A1F38),
-                  foregroundColor: const Color(0xFF0A0E21),
-                  disabledBackgroundColor: const Color(0xFF1A1F38),
-                  disabledForegroundColor: Colors.white24,
-                  elevation: canTap ? 8 : 0,
-                  shadowColor: const Color(0x4064FFDA),
+                  backgroundColor: canTap ? AppColors.success : AppColors.surfaceLight,
+                  foregroundColor: Colors.white,
+                  disabledBackgroundColor: Colors.white24,
+                  disabledForegroundColor: Colors.white38,
+                  elevation: canTap ? 6 : 0,
+                  shadowColor: AppColors.successFaded,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
-                    side: BorderSide(
-                      color: canTap
-                          ? const Color(0xFF64FFDA)
-                          : const Color(0xFF2A2F48),
-                      width: 1.5,
-                    ),
                   ),
                 ),
                 child: Row(
@@ -361,16 +349,15 @@ class _AttendanceScanPageState extends State<AttendanceScanPage>
                     Icon(
                       Icons.how_to_reg_rounded,
                       size: 24,
-                      color: canTap ? const Color(0xFF0A0E21) : Colors.white24,
+                      color: canTap ? Colors.white : Colors.white38,
                     ),
                     const SizedBox(width: 10),
                     Text(
                       'Absen Sekarang',
                       style: TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.5,
-                        color: canTap ? const Color(0xFF0A0E21) : Colors.white24,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: canTap ? Colors.white : Colors.white38,
                       ),
                     ),
                   ],
@@ -389,13 +376,13 @@ class _AttendanceScanPageState extends State<AttendanceScanPage>
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       decoration: BoxDecoration(
         color: faceDetected
-            ? const Color(0x2064FFDA)
-            : const Color(0x20FF6B6B),
+            ? AppColors.successFaded
+            : AppColors.errorFaded,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: faceDetected
-              ? const Color(0x4064FFDA)
-              : const Color(0x40FF6B6B),
+              ? AppColors.successBorder
+              : AppColors.errorBorder,
           width: 1,
         ),
       ),
@@ -405,9 +392,7 @@ class _AttendanceScanPageState extends State<AttendanceScanPage>
         children: [
           Icon(
             faceDetected ? Icons.face : Icons.face_retouching_off,
-            color: faceDetected
-                ? const Color(0xFF64FFDA)
-                : const Color(0xFFFF6B6B),
+            color: faceDetected ? AppColors.success : AppColors.error,
             size: 22,
           ),
           const SizedBox(width: 10),
@@ -416,11 +401,9 @@ class _AttendanceScanPageState extends State<AttendanceScanPage>
                 ? 'Wajah terdeteksi, silakan absen'
                 : 'Arahkan wajah ke kamera',
             style: TextStyle(
-              color: faceDetected
-                  ? const Color(0xFF64FFDA)
-                  : const Color(0xFFFF6B6B),
+              color: faceDetected ? AppColors.success : AppColors.error,
               fontSize: 14,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ],
@@ -430,16 +413,16 @@ class _AttendanceScanPageState extends State<AttendanceScanPage>
 
   Widget _buildLoadingOverlay() {
     return Container(
-      color: const Color(0xCC0A0E21),
+      color: const Color(0xCC000000),
       child: const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             SizedBox(
-              width: 64,
-              height: 64,
+              width: 60,
+              height: 60,
               child: CircularProgressIndicator(
-                color: Color(0xFF64FFDA),
+                color: AppColors.success,
                 strokeWidth: 3,
               ),
             ),
@@ -449,13 +432,13 @@ class _AttendanceScanPageState extends State<AttendanceScanPage>
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 18,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.bold,
               ),
             ),
             SizedBox(height: 8),
             Text(
-              'Mengirim ke server untuk verifikasi',
-              style: TextStyle(color: Colors.white38, fontSize: 14),
+              'Mengirim ke server ML untuk verifikasi',
+              style: TextStyle(color: Colors.white70, fontSize: 14),
             ),
           ],
         ),
@@ -477,14 +460,13 @@ class _AttendanceScanPageState extends State<AttendanceScanPage>
         },
       ),
     ).then((_) {
-      // Jika user dismiss dengan swipe, juga reset
       _cubit.resetToCamera();
     });
   }
 }
 
 // ================================================================
-// BOTTOM SHEET HASIL PREDIKSI
+// BOTTOM SHEET HASIL PREDIKSI (Light Theme)
 // ================================================================
 
 class _ResultBottomSheet extends StatelessWidget {
@@ -503,19 +485,15 @@ class _ResultBottomSheet extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF141829),
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: recognized
-              ? const Color(0x4064FFDA)
-              : const Color(0x40FF6B6B),
+          color: recognized ? AppColors.successBorder : AppColors.errorBorder,
           width: 1.5,
         ),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
-            color: recognized
-                ? const Color(0x3064FFDA)
-                : const Color(0x30FF6B6B),
+            color: AppColors.shadowMedium,
             blurRadius: 24,
             spreadRadius: 2,
           ),
@@ -526,12 +504,11 @@ class _ResultBottomSheet extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Handle bar
             Container(
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.white24,
+                color: AppColors.border,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -543,16 +520,12 @@ class _ResultBottomSheet extends StatelessWidget {
               height: 72,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: recognized
-                    ? const Color(0x2064FFDA)
-                    : const Color(0x20FF6B6B),
+                color: recognized ? AppColors.successFaded : AppColors.errorFaded,
               ),
               child: Icon(
                 recognized ? Icons.check_circle_rounded : Icons.cancel_rounded,
                 size: 48,
-                color: recognized
-                    ? const Color(0xFF64FFDA)
-                    : const Color(0xFFFF6B6B),
+                color: recognized ? AppColors.success : AppColors.error,
               ),
             ),
             const SizedBox(height: 20),
@@ -561,9 +534,7 @@ class _ResultBottomSheet extends StatelessWidget {
             Text(
               recognized ? 'Wajah Dikenali!' : 'Wajah Tidak Dikenali',
               style: TextStyle(
-                color: recognized
-                    ? const Color(0xFF64FFDA)
-                    : const Color(0xFFFF6B6B),
+                color: recognized ? AppColors.success : AppColors.error,
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
               ),
@@ -573,28 +544,28 @@ class _ResultBottomSheet extends StatelessWidget {
             Text(
               result.message,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.white54, fontSize: 14),
+              style: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
             ),
             const SizedBox(height: 24),
 
             // Detail info
             if (recognized) ...[
               _buildInfoRow(Icons.person, 'Nama', result.studentName ?? '-'),
-              const SizedBox(height: 12),
-              _buildInfoRow(Icons.badge, 'NPM', result.nim ?? '-'),
-              const SizedBox(height: 12),
+              const SizedBox(height: 10),
+              _buildInfoRow(Icons.badge, 'NIM', result.nim ?? '-'),
+              const SizedBox(height: 10),
               _buildInfoRow(
                 Icons.analytics,
                 'Confidence',
                 result.confidencePercent,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 10),
               _buildInfoRow(
                 Icons.compare_arrows,
                 'Similarity',
                 result.similarityPercent,
               ),
-              const SizedBox(height: 28),
+              const SizedBox(height: 24),
             ],
 
             // Tombol OK
@@ -604,12 +575,8 @@ class _ResultBottomSheet extends StatelessWidget {
               child: ElevatedButton(
                 onPressed: onDismiss,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: recognized
-                      ? const Color(0xFF64FFDA)
-                      : const Color(0xFF2A2F48),
-                  foregroundColor: recognized
-                      ? const Color(0xFF0A0E21)
-                      : Colors.white70,
+                  backgroundColor: recognized ? AppColors.success : AppColors.surfaceLight,
+                  foregroundColor: recognized ? Colors.white : AppColors.textPrimary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
@@ -619,7 +586,7 @@ class _ResultBottomSheet extends StatelessWidget {
                   recognized ? 'Absensi Berhasil ✓' : 'Coba Lagi',
                   style: const TextStyle(
                     fontSize: 16,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
@@ -634,26 +601,27 @@ class _ResultBottomSheet extends StatelessWidget {
 
   Widget _buildInfoRow(IconData icon, String label, String value) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFF1A1F38),
+        color: AppColors.surfaceLight,
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
       ),
       child: Row(
         children: [
-          Icon(icon, color: const Color(0xFF64FFDA), size: 22),
-          const SizedBox(width: 14),
+          Icon(icon, color: AppColors.primary, size: 20),
+          const SizedBox(width: 12),
           Text(
             label,
-            style: const TextStyle(color: Colors.white54, fontSize: 14),
+            style: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
           ),
           const Spacer(),
           Text(
             value,
             style: const TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ],

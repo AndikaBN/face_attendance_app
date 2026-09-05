@@ -20,17 +20,21 @@ class LecturerLoaded extends LecturerState {
   final List<AttendanceLogModel> logs;
   final DateTime selectedDate;
   final int totalStudents;
-  final int presentCount;
+  final int presentCount; // Masuk
+  final int izinCount;    // Izin
+  final int alpaCount;    // Alpa
 
   const LecturerLoaded({
     required this.logs,
     required this.selectedDate,
     required this.totalStudents,
     required this.presentCount,
+    required this.izinCount,
+    required this.alpaCount,
   });
 
   double get attendancePercentage =>
-      totalStudents > 0 ? (presentCount / totalStudents) * 100 : 0;
+      totalStudents > 0 ? ((presentCount + izinCount) / totalStudents) * 100 : 0;
 }
 
 /// Error.

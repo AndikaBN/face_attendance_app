@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:face_attendance_app/features/attendance/data/models/attendance_log_model.dart';
 import 'package:face_attendance_app/features/lecturer/data/repositories/lecturer_repository.dart';
 import 'package:face_attendance_app/features/lecturer/presentation/cubit/lecturer_state.dart';
 
@@ -25,17 +26,32 @@ class LecturerCubit extends Cubit<LecturerState> {
         _repository.getTotalStudents(),
       ]);
 
-      final logs = results[0] as List;
+      final logs = (results[0] as List).cast<AttendanceLogModel>();
       final totalStudents = results[1] as int;
 
-      // Hitung unique students yang hadir (berdasarkan NIM)
-      final uniqueNims = logs.map((log) => (log as dynamic).nim).toSet();
+      // Hitung per status berdasarkan NIM unik
+      final masukNims = <String>{};
+      final izinNims = <String>{};
+
+      for (final log in logs) {
+        if (log.isIzin) {
+          izinNims.add(log.nim);
+        } else {
+          masukNims.add(log.nim);
+        }
+      }
+
+      final presentCount = masukNims.length;
+      final izinCount = izinNims.length;
+      final alpaCount = (totalStudents - presentCount - izinCount).clamp(0, totalStudents);
 
       emit(LecturerLoaded(
-        logs: List.from(logs),
+        logs: logs,
         selectedDate: date,
         totalStudents: totalStudents,
-        presentCount: uniqueNims.length,
+        presentCount: presentCount,
+        izinCount: izinCount,
+        alpaCount: alpaCount,
       ));
     } catch (e) {
       debugPrint('[LecturerCubit] Error: $e');

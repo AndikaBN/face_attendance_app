@@ -4,7 +4,7 @@ import 'package:face_attendance_app/core/constants/app_colors.dart';
 import 'package:face_attendance_app/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:face_attendance_app/features/auth/presentation/cubit/auth_state.dart';
 
-/// Halaman register untuk mahasiswa dan dosen.
+/// Halaman register untuk mahasiswa dan dosen (Light Theme).
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
 
@@ -55,7 +55,7 @@ class _RegisterPageState extends State<RegisterPage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+          icon: const Icon(Icons.arrow_back_ios, color: AppColors.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -70,7 +70,6 @@ class _RegisterPageState extends State<RegisterPage> {
             );
           }
           if (state is AuthAuthenticated) {
-            // Pop register page, main.dart will handle routing
             Navigator.of(context).popUntil((route) => route.isFirst);
           }
         },
@@ -83,9 +82,9 @@ class _RegisterPageState extends State<RegisterPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'Buat Akun',
+                    'Buat Akun Baru',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
                     ),
@@ -93,155 +92,182 @@ class _RegisterPageState extends State<RegisterPage> {
                   const SizedBox(height: 6),
                   const Text(
                     'Isi data di bawah untuk mendaftar',
-                    style: TextStyle(color: AppColors.textMuted, fontSize: 14),
-                  ),
-                  const SizedBox(height: 32),
-
-                  // Role selector
-                  const Text(
-                    'Daftar sebagai',
                     style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
                   ),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      _buildRoleChip('mahasiswa', 'Mahasiswa', Icons.school),
-                      const SizedBox(width: 12),
-                      _buildRoleChip('dosen', 'Dosen', Icons.person_outline),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 28),
 
-                  // Nama
-                  _buildTextField(
-                    controller: _nameController,
-                    label: 'Nama Lengkap',
-                    icon: Icons.person_outline,
-                    validator: (v) {
-                      if (v == null || v.isEmpty) return 'Nama wajib diisi';
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Email
-                  _buildTextField(
-                    controller: _emailController,
-                    label: 'Email',
-                    icon: Icons.email_outlined,
-                    keyboardType: TextInputType.emailAddress,
-                    validator: (v) {
-                      if (v == null || v.isEmpty) return 'Email wajib diisi';
-                      if (!v.contains('@')) return 'Format email tidak valid';
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-
-                  // NIM (hanya untuk mahasiswa)
-                  if (_selectedRole == 'mahasiswa') ...[
-                    _buildTextField(
-                      controller: _nimController,
-                      label: 'NIM',
-                      icon: Icons.badge_outlined,
-                      keyboardType: TextInputType.number,
-                      validator: (v) {
-                        if (v == null || v.isEmpty) return 'NIM wajib diisi';
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                  ],
-
-                  // Password
-                  _buildTextField(
-                    controller: _passwordController,
-                    label: 'Password',
-                    icon: Icons.lock_outline,
-                    obscure: _obscurePassword,
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword
-                            ? Icons.visibility_off
-                            : Icons.visibility,
-                        color: AppColors.textMuted,
-                        size: 20,
-                      ),
-                      onPressed: () {
-                        setState(() => _obscurePassword = !_obscurePassword);
-                      },
-                    ),
-                    validator: (v) {
-                      if (v == null || v.isEmpty) return 'Password wajib diisi';
-                      if (v.length < 6) return 'Minimal 6 karakter';
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Confirm Password
-                  _buildTextField(
-                    controller: _confirmPasswordController,
-                    label: 'Konfirmasi Password',
-                    icon: Icons.lock_outline,
-                    obscure: _obscureConfirm,
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscureConfirm
-                            ? Icons.visibility_off
-                            : Icons.visibility,
-                        color: AppColors.textMuted,
-                        size: 20,
-                      ),
-                      onPressed: () {
-                        setState(() => _obscureConfirm = !_obscureConfirm);
-                      },
-                    ),
-                    validator: (v) {
-                      if (v != _passwordController.text) {
-                        return 'Password tidak cocok';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 32),
-
-                  // Register button
-                  BlocBuilder<AuthCubit, AuthState>(
-                    builder: (context, state) {
-                      final isLoading = state is AuthLoading;
-                      return SizedBox(
-                        width: double.infinity,
-                        height: 54,
-                        child: ElevatedButton(
-                          onPressed: isLoading ? null : _onRegister,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            foregroundColor: AppColors.background,
-                            disabledBackgroundColor: AppColors.surfaceLight,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                          ),
-                          child: isLoading
-                              ? const SizedBox(
-                                  width: 24,
-                                  height: 24,
-                                  child: CircularProgressIndicator(
-                                    color: AppColors.primary,
-                                    strokeWidth: 2.5,
-                                  ),
-                                )
-                              : const Text(
-                                  'Daftar',
-                                  style: TextStyle(
-                                    fontSize: 17,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
+                  // Form Container
+                  Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: AppColors.border),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: AppColors.shadowMedium,
+                          blurRadius: 20,
+                          offset: Offset(0, 8),
                         ),
-                      );
-                    },
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Role selector
+                        const Text(
+                          'Daftar sebagai',
+                          style: TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            _buildRoleChip('mahasiswa', 'Mahasiswa', Icons.school),
+                            const SizedBox(width: 12),
+                            _buildRoleChip('dosen', 'Dosen', Icons.person_outline),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Nama
+                        _buildTextField(
+                          controller: _nameController,
+                          label: 'Nama Lengkap',
+                          icon: Icons.person_outline,
+                          validator: (v) {
+                            if (v == null || v.isEmpty) return 'Nama wajib diisi';
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Email
+                        _buildTextField(
+                          controller: _emailController,
+                          label: 'Email',
+                          icon: Icons.email_outlined,
+                          keyboardType: TextInputType.emailAddress,
+                          validator: (v) {
+                            if (v == null || v.isEmpty) return 'Email wajib diisi';
+                            if (!v.contains('@')) return 'Format email tidak valid';
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+
+                        // NIM (hanya untuk mahasiswa)
+                        if (_selectedRole == 'mahasiswa') ...[
+                          _buildTextField(
+                            controller: _nimController,
+                            label: 'NIM',
+                            icon: Icons.badge_outlined,
+                            keyboardType: TextInputType.number,
+                            validator: (v) {
+                              if (v == null || v.isEmpty) return 'NIM wajib diisi';
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+
+                        // Password
+                        _buildTextField(
+                          controller: _passwordController,
+                          label: 'Password',
+                          icon: Icons.lock_outline,
+                          obscure: _obscurePassword,
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscurePassword
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                              color: AppColors.textMuted,
+                              size: 20,
+                            ),
+                            onPressed: () {
+                              setState(() => _obscurePassword = !_obscurePassword);
+                            },
+                          ),
+                          validator: (v) {
+                            if (v == null || v.isEmpty) return 'Password wajib diisi';
+                            if (v.length < 6) return 'Minimal 6 karakter';
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Confirm Password
+                        _buildTextField(
+                          controller: _confirmPasswordController,
+                          label: 'Konfirmasi Password',
+                          icon: Icons.lock_outline,
+                          obscure: _obscureConfirm,
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscureConfirm
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                              color: AppColors.textMuted,
+                              size: 20,
+                            ),
+                            onPressed: () {
+                              setState(() => _obscureConfirm = !_obscureConfirm);
+                            },
+                          ),
+                          validator: (v) {
+                            if (v != _passwordController.text) {
+                              return 'Password tidak cocok';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 24),
+
+                        // Register button
+                        BlocBuilder<AuthCubit, AuthState>(
+                          builder: (context, state) {
+                            final isLoading = state is AuthLoading;
+                            return SizedBox(
+                              width: double.infinity,
+                              height: 52,
+                              child: ElevatedButton(
+                                onPressed: isLoading ? null : _onRegister,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.primary,
+                                  foregroundColor: Colors.white,
+                                  disabledBackgroundColor: AppColors.surfaceLight,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                  elevation: 3,
+                                  shadowColor: AppColors.primaryFaded,
+                                ),
+                                child: isLoading
+                                    ? const SizedBox(
+                                        width: 24,
+                                        height: 24,
+                                        child: CircularProgressIndicator(
+                                          color: Colors.white,
+                                          strokeWidth: 2.5,
+                                        ),
+                                      )
+                                    : const Text(
+                                        'Daftar',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 32),
                 ],
@@ -260,7 +286,7 @@ class _RegisterPageState extends State<RegisterPage> {
         onTap: () => setState(() => _selectedRole = value),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 14),
+          padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
             color: isSelected ? AppColors.primaryFaded : AppColors.surfaceLight,
             borderRadius: BorderRadius.circular(12),
@@ -275,14 +301,14 @@ class _RegisterPageState extends State<RegisterPage> {
               Icon(
                 icon,
                 size: 20,
-                color: isSelected ? AppColors.primary : AppColors.textMuted,
+                color: isSelected ? AppColors.primary : AppColors.textSecondary,
               ),
               const SizedBox(width: 8),
               Text(
                 label,
                 style: TextStyle(
                   color: isSelected ? AppColors.primary : AppColors.textSecondary,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                   fontSize: 14,
                 ),
               ),
@@ -306,12 +332,12 @@ class _RegisterPageState extends State<RegisterPage> {
       controller: controller,
       keyboardType: keyboardType,
       obscureText: obscure,
-      style: const TextStyle(color: Colors.white, fontSize: 15),
+      style: const TextStyle(color: AppColors.textPrimary, fontSize: 15),
       validator: validator,
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(color: AppColors.textMuted, fontSize: 14),
-        prefixIcon: Icon(icon, color: AppColors.textMuted, size: 20),
+        labelStyle: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
+        prefixIcon: Icon(icon, color: AppColors.textSecondary, size: 20),
         suffixIcon: suffixIcon,
         filled: true,
         fillColor: AppColors.surfaceLight,

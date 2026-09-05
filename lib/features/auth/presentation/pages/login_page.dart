@@ -6,7 +6,7 @@ import 'package:face_attendance_app/features/auth/presentation/cubit/auth_state.
 import 'package:face_attendance_app/features/auth/presentation/pages/register_page.dart';
 import 'package:face_attendance_app/features/auth/utils/firebase_seeder.dart';
 
-/// Halaman login dengan email dan password.
+/// Halaman login dengan email dan password (Light Theme).
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -32,9 +32,9 @@ class _LoginPageState extends State<LoginPage> {
     if (!_formKey.currentState!.validate()) return;
 
     context.read<AuthCubit>().login(
-          email: _emailController.text.trim(),
-          password: _passwordController.text,
-        );
+      email: _emailController.text.trim(),
+      password: _passwordController.text,
+    );
   }
 
   @override
@@ -51,7 +51,6 @@ class _LoginPageState extends State<LoginPage> {
               ),
             );
           }
-          // Navigation handled by parent (main.dart)
         },
         child: SafeArea(
           child: Center(
@@ -62,6 +61,8 @@ class _LoginPageState extends State<LoginPage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    const SizedBox(height: 20),
+
                     // Logo / Title
                     GestureDetector(
                       onTap: () {
@@ -75,8 +76,8 @@ class _LoginPageState extends State<LoginPage> {
                       child: Column(
                         children: [
                           Container(
-                            width: 80,
-                            height: 80,
+                            width: 88,
+                            height: 88,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: AppColors.primaryFaded,
@@ -84,117 +85,158 @@ class _LoginPageState extends State<LoginPage> {
                                 color: AppColors.primaryBorder,
                                 width: 2,
                               ),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: AppColors.shadowMedium,
+                                  blurRadius: 16,
+                                  offset: Offset(0, 6),
+                                ),
+                              ],
                             ),
                             child: const Icon(
-                              Icons.face_retouching_natural,
-                              size: 44,
+                              Icons.fact_check,
+                              size: 48,
                               color: AppColors.primary,
                             ),
                           ),
-                          const SizedBox(height: 24),
+                          const SizedBox(height: 20),
                           const Text(
                             'Face Attendance',
                             style: TextStyle(
-                              color: Colors.white,
+                              color: AppColors.textPrimary,
                               fontSize: 28,
                               fontWeight: FontWeight.bold,
-                              letterSpacing: 1,
+                              letterSpacing: 0.5,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 6),
                     const Text(
-                      'Masuk ke akun Anda',
+                      'Sistem Absensi Wajah Mahasiswa',
                       style: TextStyle(
-                        color: AppColors.textMuted,
-                        fontSize: 15,
+                        color: AppColors.textSecondary,
+                        fontSize: 14,
                       ),
                     ),
-                    const SizedBox(height: 40),
+                    const SizedBox(height: 36),
 
-                    // Email field
-                    _buildTextField(
-                      controller: _emailController,
-                      label: 'Email',
-                      icon: Icons.email_outlined,
-                      keyboardType: TextInputType.emailAddress,
-                      validator: (v) {
-                        if (v == null || v.isEmpty) return 'Email wajib diisi';
-                        if (!v.contains('@')) return 'Format email tidak valid';
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Password field
-                    _buildTextField(
-                      controller: _passwordController,
-                      label: 'Password',
-                      icon: Icons.lock_outline,
-                      obscure: _obscurePassword,
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscurePassword
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                          color: AppColors.textMuted,
-                          size: 20,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _obscurePassword = !_obscurePassword;
-                          });
-                        },
-                      ),
-                      validator: (v) {
-                        if (v == null || v.isEmpty) {
-                          return 'Password wajib diisi';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 28),
-
-                    // Login button
-                    BlocBuilder<AuthCubit, AuthState>(
-                      builder: (context, state) {
-                        final isLoading = state is AuthLoading;
-                        return SizedBox(
-                          width: double.infinity,
-                          height: 54,
-                          child: ElevatedButton(
-                            onPressed: isLoading ? null : _onLogin,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
-                              foregroundColor: AppColors.background,
-                              disabledBackgroundColor: AppColors.surfaceLight,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                              elevation: 4,
-                              shadowColor: AppColors.primaryFaded,
-                            ),
-                            child: isLoading
-                                ? const SizedBox(
-                                    width: 24,
-                                    height: 24,
-                                    child: CircularProgressIndicator(
-                                      color: AppColors.primary,
-                                      strokeWidth: 2.5,
-                                    ),
-                                  )
-                                : const Text(
-                                    'Masuk',
-                                    style: TextStyle(
-                                      fontSize: 17,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
+                    // Form Container
+                    Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: AppColors.border),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: AppColors.shadowMedium,
+                            blurRadius: 20,
+                            offset: Offset(0, 8),
                           ),
-                        );
-                      },
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Masuk Akun',
+                            style: TextStyle(
+                              color: AppColors.textPrimary,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+
+                          // Email field
+                          _buildTextField(
+                            controller: _emailController,
+                            label: 'Email',
+                            icon: Icons.email_outlined,
+                            keyboardType: TextInputType.emailAddress,
+                            validator: (v) {
+                              if (v == null || v.isEmpty)
+                                return 'Email wajib diisi';
+                              if (!v.contains('@'))
+                                return 'Format email tidak valid';
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Password field
+                          _buildTextField(
+                            controller: _passwordController,
+                            label: 'Password',
+                            icon: Icons.lock_outline,
+                            obscure: _obscurePassword,
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscurePassword
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
+                                color: AppColors.textMuted,
+                                size: 20,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _obscurePassword = !_obscurePassword;
+                                });
+                              },
+                            ),
+                            validator: (v) {
+                              if (v == null || v.isEmpty) {
+                                return 'Password wajib diisi';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 24),
+
+                          // Login button
+                          BlocBuilder<AuthCubit, AuthState>(
+                            builder: (context, state) {
+                              final isLoading = state is AuthLoading;
+                              return SizedBox(
+                                width: double.infinity,
+                                height: 52,
+                                child: ElevatedButton(
+                                  onPressed: isLoading ? null : _onLogin,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.primary,
+                                    foregroundColor: Colors.white,
+                                    disabledBackgroundColor:
+                                        AppColors.surfaceLight,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                    ),
+                                    elevation: 3,
+                                    shadowColor: AppColors.primaryFaded,
+                                  ),
+                                  child: isLoading
+                                      ? const SizedBox(
+                                          width: 24,
+                                          height: 24,
+                                          child: CircularProgressIndicator(
+                                            color: Colors.white,
+                                            strokeWidth: 2.5,
+                                          ),
+                                        )
+                                      : const Text(
+                                          'Masuk',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
                     ),
                     const SizedBox(height: 24),
 
@@ -205,7 +247,7 @@ class _LoginPageState extends State<LoginPage> {
                         const Text(
                           'Belum punya akun? ',
                           style: TextStyle(
-                            color: AppColors.textMuted,
+                            color: AppColors.textSecondary,
                             fontSize: 14,
                           ),
                         ),
@@ -225,12 +267,13 @@ class _LoginPageState extends State<LoginPage> {
                             style: TextStyle(
                               color: AppColors.primary,
                               fontSize: 14,
-                              fontWeight: FontWeight.w600,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
                       ],
                     ),
+                    const SizedBox(height: 20),
                   ],
                 ),
               ),
@@ -254,12 +297,15 @@ class _LoginPageState extends State<LoginPage> {
       controller: controller,
       keyboardType: keyboardType,
       obscureText: obscure,
-      style: const TextStyle(color: Colors.white, fontSize: 15),
+      style: const TextStyle(color: AppColors.textPrimary, fontSize: 15),
       validator: validator,
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(color: AppColors.textMuted, fontSize: 14),
-        prefixIcon: Icon(icon, color: AppColors.textMuted, size: 20),
+        labelStyle: const TextStyle(
+          color: AppColors.textSecondary,
+          fontSize: 14,
+        ),
+        prefixIcon: Icon(icon, color: AppColors.textSecondary, size: 20),
         suffixIcon: suffixIcon,
         filled: true,
         fillColor: AppColors.surfaceLight,
@@ -279,8 +325,10 @@ class _LoginPageState extends State<LoginPage> {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.error),
         ),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
+        ),
       ),
     );
   }
@@ -299,13 +347,18 @@ class _LoginPageState extends State<LoginPage> {
           builder: (context, setDialogState) {
             return AlertDialog(
               backgroundColor: AppColors.surface,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
               title: const Row(
                 children: [
                   Icon(Icons.storage, color: AppColors.primary),
                   SizedBox(width: 12),
                   Expanded(
-                    child: Text('Firebase Database Seeder'),
+                    child: Text(
+                      'Firebase Database Seeder',
+                      style: TextStyle(color: AppColors.textPrimary),
+                    ),
                   ),
                 ],
               ),
@@ -318,24 +371,36 @@ class _LoginPageState extends State<LoginPage> {
                     children: [
                       const Text(
                         'Fitur ini akan mendaftarkan 20 akun mahasiswa dan 1 dosen demo ke Firebase project Anda secara otomatis.',
-                        style: TextStyle(color: Colors.white70, fontSize: 13),
+                        style: TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 13,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       if (isSeeding) ...[
                         const Center(
-                          child: CircularProgressIndicator(color: AppColors.primary),
+                          child: CircularProgressIndicator(
+                            color: AppColors.primary,
+                          ),
                         ),
                         const SizedBox(height: 16),
                       ],
                       Text(
                         currentProgress,
-                        style: const TextStyle(color: AppColors.primary, fontSize: 12, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                          color: AppColors.primary,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       if (currentError.isNotEmpty) ...[
                         const SizedBox(height: 8),
                         Text(
                           currentError,
-                          style: const TextStyle(color: AppColors.error, fontSize: 11),
+                          style: const TextStyle(
+                            color: AppColors.error,
+                            fontSize: 11,
+                          ),
                         ),
                       ],
                     ],
@@ -346,7 +411,10 @@ class _LoginPageState extends State<LoginPage> {
                 if (!isSeeding && !isDone) ...[
                   TextButton(
                     onPressed: () => Navigator.pop(context),
-                    child: const Text('Batal', style: TextStyle(color: Colors.white54)),
+                    child: const Text(
+                      'Batal',
+                      style: TextStyle(color: AppColors.textSecondary),
+                    ),
                   ),
                   ElevatedButton(
                     onPressed: () {
@@ -369,12 +437,15 @@ class _LoginPageState extends State<LoginPage> {
                           setDialogState(() {
                             isSeeding = false;
                             isDone = true;
-                            currentProgress = "✅ Seeding Selesai! Semua akun berhasil didaftarkan.";
+                            currentProgress =
+                                "✅ Seeding Selesai! Semua akun berhasil didaftarkan.";
                           });
                         },
                       );
                     },
-                    style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                    ),
                     child: const Text('Mulai Seeding'),
                   ),
                 ],
@@ -382,10 +453,11 @@ class _LoginPageState extends State<LoginPage> {
                   ElevatedButton(
                     onPressed: () {
                       Navigator.pop(context);
-                      // Trigger auth state check agar clean
                       context.read<AuthCubit>().checkAuth();
                     },
-                    style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                    ),
                     child: const Text('Selesai'),
                   ),
               ],
