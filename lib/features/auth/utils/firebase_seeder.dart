@@ -78,7 +78,7 @@ class FirebaseSeeder {
             email: l['email']!,
             password: defaultPassword,
           );
-
+          
           await _firestore.collection('users').doc(credential.user!.uid).set({
             'email': l['email'],
             'name': l['name'],
