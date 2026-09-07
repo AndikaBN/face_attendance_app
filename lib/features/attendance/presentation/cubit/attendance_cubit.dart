@@ -6,6 +6,7 @@ import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:face_attendance_app/features/attendance/data/repositories/attendance_repository.dart';
 import 'package:face_attendance_app/features/attendance/presentation/cubit/attendance_state.dart';
 import 'package:face_attendance_app/features/attendance/utils/input_image_converter.dart';
+import 'package:face_attendance_app/core/services/geofence_service.dart';
 
 import 'package:face_attendance_app/features/auth/data/models/user_model.dart';
 import 'package:face_attendance_app/features/attendance/data/models/predict_response_model.dart';
@@ -14,6 +15,7 @@ import 'package:face_attendance_app/features/attendance/data/models/predict_resp
 class AttendanceCubit extends Cubit<AttendanceState> {
   final AttendanceRepository _repository;
   final UserModel user;
+  final GeofenceService _geofenceService;
 
   CameraController? _cameraController;
   CameraController? get cameraController => _cameraController;
@@ -24,8 +26,13 @@ class AttendanceCubit extends Cubit<AttendanceState> {
   bool _isStreaming = false;
   bool _hasReset = false; // Guard untuk mencegah double reset
 
-  AttendanceCubit({required this.user, AttendanceRepository? repository})
+  AttendanceCubit({
+    required this.user,
+    AttendanceRepository? repository,
+    GeofenceService? geofenceService,
+  })
       : _repository = repository ?? AttendanceRepository(),
+        _geofenceService = geofenceService ?? GeofenceService(),
         super(const AttendanceInitial()) {
     _faceDetector = FaceDetector(
       options: FaceDetectorOptions(
@@ -161,6 +168,9 @@ class AttendanceCubit extends Cubit<AttendanceState> {
     try {
       emit(const AttendancePredicting());
 
+      // Verifikasi lokasi sebelum mengambil atau mengunggah foto.
+      final location = await _geofenceService.getVerifiedPosition();
+
       // Stop stream supaya bisa capture
       await _stopImageStream();
 
@@ -169,7 +179,12 @@ class AttendanceCubit extends Cubit<AttendanceState> {
       final File imageFile = File(photo.path);
 
       // Upload ke Flask API
-      var result = await _repository.uploadForPrediction(imageFile);
+      var result = await _repository.uploadForPrediction(
+        imageFile,
+        latitude: location.position.latitude,
+        longitude: location.position.longitude,
+        accuracyMeters: location.position.accuracy,
+      );
 
       // Verifikasi identitas: NIM dari hasil deteksi wajah harus sama dengan NIM user yang login
       if (result.recognized) {
@@ -194,6 +209,10 @@ class AttendanceCubit extends Cubit<AttendanceState> {
         await _repository.saveAttendanceLog(
           userUid: user.uid,
           result: result,
+          latitude: location.position.latitude,
+          longitude: location.position.longitude,
+          accuracyMeters: location.position.accuracy,
+          distanceMeters: location.distanceMeters,
         );
       }
 

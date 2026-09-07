@@ -24,12 +24,20 @@ class ApiClient {
   ///
   /// [imageFile] — file gambar yang akan dikirim (JPG/PNG).
   /// Returns response Map dari Flask API.
-  Future<Map<String, dynamic>> predictFace(File imageFile) async {
+  Future<Map<String, dynamic>> predictFace(
+    File imageFile, {
+    required double latitude,
+    required double longitude,
+    required double accuracyMeters,
+  }) async {
     final formData = FormData.fromMap({
       'image': await MultipartFile.fromFile(
         imageFile.path,
         filename: 'capture_${DateTime.now().millisecondsSinceEpoch}.jpg',
       ),
+      'latitude': latitude.toString(),
+      'longitude': longitude.toString(),
+      'accuracy_meters': accuracyMeters.toString(),
     });
 
     final response = await _dio.post(

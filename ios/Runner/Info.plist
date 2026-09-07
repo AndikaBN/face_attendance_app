@@ -28,6 +28,8 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>Aplikasi memerlukan akses kamera untuk mendeteksi dan mengenali wajah mahasiswa saat proses absensi.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Aplikasi memerlukan lokasi saat absensi untuk memastikan Anda berada di area kampus.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

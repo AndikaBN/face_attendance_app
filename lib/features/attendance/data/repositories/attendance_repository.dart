@@ -21,9 +21,19 @@ class AttendanceRepository {
       FirebaseService.firestore.collection('attendance_logs');
 
   /// Upload gambar wajah ke Flask API untuk recognition.
-  Future<PredictResponseModel> uploadForPrediction(File imageFile) async {
+  Future<PredictResponseModel> uploadForPrediction(
+    File imageFile, {
+    required double latitude,
+    required double longitude,
+    required double accuracyMeters,
+  }) async {
     try {
-      final responseData = await _apiClient.predictFace(imageFile);
+      final responseData = await _apiClient.predictFace(
+        imageFile,
+        latitude: latitude,
+        longitude: longitude,
+        accuracyMeters: accuracyMeters,
+      );
       return PredictResponseModel.fromJson(responseData);
     } catch (e) {
       throw Exception('Gagal mengirim gambar ke server: $e');
@@ -34,6 +44,10 @@ class AttendanceRepository {
   Future<void> saveAttendanceLog({
     required String userUid,
     required PredictResponseModel result,
+    required double latitude,
+    required double longitude,
+    required double accuracyMeters,
+    required double distanceMeters,
   }) async {
     final now = DateTime.now();
     final dateKey = DateFormat('yyyy-MM-dd').format(now);
@@ -51,6 +65,11 @@ class AttendanceRepository {
       'image_url': null,
       'status': 'masuk',
       'alasan_izin': null,
+      'latitude': latitude,
+      'longitude': longitude,
+      'accuracy_meters': accuracyMeters,
+      'distance_from_campus_meters': distanceMeters,
+      'location_verified': true,
     });
 
     debugPrint('[AttendanceRepository] ✅ Log absensi masuk disimpan ke Firestore');
