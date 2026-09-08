@@ -226,7 +226,15 @@ class AttendanceCubit extends Cubit<AttendanceState> {
         await imageFile.delete();
       } catch (_) {}
     } catch (e) {
-      emit(AttendanceError(message: 'Gagal proses absensi: $e'));
+      if (e is GeofenceException) {
+        emit(AttendanceError(message: e.message));
+      } else if (e is AttendanceException) {
+        emit(AttendanceError(message: e.message));
+      } else {
+        emit(const AttendanceError(
+          message: 'Absensi gagal diproses. Silakan coba lagi.',
+        ));
+      }
     }
   }
 

@@ -11,10 +11,18 @@ class GeofenceCheckResult {
   });
 }
 
+class GeofenceException implements Exception {
+  final String message;
+
+  const GeofenceException(this.message);
+}
+
 class GeofenceService {
   Future<GeofenceCheckResult> getVerifiedPosition() async {
     if (!await Geolocator.isLocationServiceEnabled()) {
-      throw Exception('Layanan lokasi/GPS harus diaktifkan untuk absensi');
+      throw const GeofenceException(
+        'Aktifkan lokasi/GPS untuk melakukan absensi.',
+      );
     }
 
     var permission = await Geolocator.checkPermission();
@@ -23,7 +31,9 @@ class GeofenceService {
     }
     if (permission == LocationPermission.denied ||
         permission == LocationPermission.deniedForever) {
-      throw Exception('Izin lokasi diperlukan untuk melakukan absensi');
+      throw const GeofenceException(
+        'Izin lokasi diperlukan untuk melakukan absensi.',
+      );
     }
 
     final position = await Geolocator.getCurrentPosition(
@@ -34,13 +44,14 @@ class GeofenceService {
     );
 
     if (position.isMocked) {
-      throw Exception('Lokasi palsu terdeteksi. Matikan aplikasi pengubah GPS');
+      throw const GeofenceException(
+        'Lokasi tidak dapat diverifikasi. Matikan aplikasi pengubah GPS.',
+      );
     }
 
     if (position.accuracy > GeofenceConfig.maxAccuracyMeters) {
-      throw Exception(
-        'Akurasi lokasi terlalu rendah (${position.accuracy.toStringAsFixed(1)} m). '
-        'Coba aktifkan GPS di area terbuka',
+      throw const GeofenceException(
+        'Lokasi belum cukup akurat. Coba aktifkan GPS dan pindah ke area terbuka.',
       );
     }
 
@@ -52,9 +63,8 @@ class GeofenceService {
     );
 
     if (distanceMeters > GeofenceConfig.radiusMeters) {
-      throw Exception(
-        'Anda berada di luar area kampus '
-        '(${distanceMeters.toStringAsFixed(1)} m dari titik absensi)',
+      throw const GeofenceException(
+        'Absensi tidak dapat dilakukan karena Anda berada di luar area kampus.',
       );
     }
 

@@ -1,11 +1,18 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:face_attendance_app/core/network/api_client.dart';
 import 'package:face_attendance_app/core/services/firebase_service.dart';
 import 'package:face_attendance_app/features/attendance/data/models/predict_response_model.dart';
 import 'package:face_attendance_app/features/attendance/data/models/attendance_log_model.dart';
+
+class AttendanceException implements Exception {
+  final String message;
+
+  const AttendanceException(this.message);
+}
 
 /// Repository untuk operasi absensi:
 /// - Upload gambar wajah untuk prediksi (Flask API)
@@ -35,8 +42,25 @@ class AttendanceRepository {
         accuracyMeters: accuracyMeters,
       );
       return PredictResponseModel.fromJson(responseData);
-    } catch (e) {
-      throw Exception('Gagal mengirim gambar ke server: $e');
+    } on DioException catch (e) {
+      final responseMessage = e.response?.data is Map
+          ? (e.response?.data['message']?.toString() ?? '')
+          : '';
+
+      if (responseMessage.toLowerCase().contains('luar area kampus') ||
+          responseMessage.toLowerCase().contains('luar jangkauan')) {
+        throw const AttendanceException(
+          'Absensi gagal diproses: Anda di luar jangkauan kampus.',
+        );
+      }
+
+      throw const AttendanceException(
+        'Absensi gagal diproses. Silakan coba lagi.',
+      );
+    } catch (_) {
+      throw const AttendanceException(
+        'Absensi gagal diproses. Silakan coba lagi.',
+      );
     }
   }
 
