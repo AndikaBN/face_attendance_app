@@ -50,8 +50,11 @@ class GeofenceService {
     }
 
     if (position.accuracy > GeofenceConfig.maxAccuracyMeters) {
-      throw const GeofenceException(
-        'Lokasi belum cukup akurat. Coba aktifkan GPS dan pindah ke area terbuka.',
+      throw GeofenceException(
+        'Akurasi lokasi saat ini '
+        '${position.accuracy.toStringAsFixed(0)} meter. '
+        'Maksimum ${GeofenceConfig.maxAccuracyMeters.toStringAsFixed(0)} '
+        'meter. Aktifkan Lokasi Presisi dan coba lagi.',
       );
     }
 

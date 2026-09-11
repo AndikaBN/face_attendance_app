@@ -54,6 +54,12 @@ class AttendanceRepository {
         );
       }
 
+      // Error validasi dari API aman ditampilkan agar pengguna tahu
+      // data lokasi atau gambar mana yang perlu diperbaiki.
+      if (e.response?.statusCode == 422 && responseMessage.isNotEmpty) {
+        throw AttendanceException(responseMessage);
+      }
+
       throw const AttendanceException(
         'Absensi gagal diproses. Silakan coba lagi.',
       );

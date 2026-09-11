@@ -165,6 +165,9 @@ class AttendanceCubit extends Cubit<AttendanceState> {
       return;
     }
 
+    // Setiap percobaan baru harus dapat kembali ke kamera jika proses gagal.
+    _hasReset = false;
+
     try {
       emit(const AttendancePredicting());
 
@@ -215,9 +218,6 @@ class AttendanceCubit extends Cubit<AttendanceState> {
           distanceMeters: location.distanceMeters,
         );
       }
-
-      // Reset flag agar resetToCamera bisa dipanggil
-      _hasReset = false;
 
       emit(AttendanceSuccess(result: result));
 
