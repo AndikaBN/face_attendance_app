@@ -2,7 +2,7 @@
 class ApiConfig {
   /// Base URL Flask API.
   /// Ganti dengan URL ngrok jika menggunakan tunnel.
-  static const String baseUrl = "https://fd97-103-190-47-12.ngrok-free.app";
+  static const String baseUrl = "https://5bb5-103-190-47-12.ngrok-free.app";
 
   /// Endpoint untuk prediksi wajah.
   static const String predictEndpoint = "/predict";
